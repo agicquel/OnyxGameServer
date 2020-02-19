@@ -108,10 +108,14 @@ public class RoomEndpoint {
             }
             else {
                 if(session.equals(room.getValue1())) {
+                    sendTextToSession(room.getValue2(), OTPCommand.command("OPPONENT "+ coord));
+
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_AWAITING);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_READY);
                 }
                 else {
+                    sendTextToSession(room.getValue1(), OTPCommand.command("OPPONENT "+ coord));
+
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_READY);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_AWAITING);
                 }

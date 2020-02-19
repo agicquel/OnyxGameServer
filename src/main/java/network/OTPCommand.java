@@ -15,18 +15,18 @@ public class OTPCommand {
     public static final String COMMAND_LOOSE = command("LOOSE");
 
     public static String err(String err) {
-        return "! " + err;
+        return "!" + err;
     }
 
     public static String info(String info) {
-        return "# " + info;
+        return "#" + info;
     }
 
     public static String result(String result) {
-        return "= " + result;
+        return "=" + result;
     }
 
     public static String command(String command) {
-        return "$ " + command;
+        return "$" + command;
     }
 }
