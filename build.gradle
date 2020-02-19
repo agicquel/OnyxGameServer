@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+}
+
+group 'onyx.game.server'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+application {
+    mainClassName = 'Main'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Main-Class': 'Main')
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'javax.websocket:javax.websocket-api:1.1'
+    compile 'org.glassfish.tyrus:tyrus-server:1.12'
+    compile 'org.glassfish.tyrus:tyrus-container-grizzly-server:1.12'
+    compile 'org.javatuples:javatuples:1.2'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
