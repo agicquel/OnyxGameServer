@@ -51,6 +51,10 @@ public class RoomEndpoint {
             }
         }
         else {
+            if(roomId.length() < 6) {
+                sendTextToSession(session, "!Bad format for Room ID");
+                return;
+            }
             Triplet<String, Session, Session> newRoom = new Triplet<>(roomId, session, null);
             rooms.add(newRoom);
             games.put(roomId, new Board());
@@ -60,9 +64,9 @@ public class RoomEndpoint {
     }
 
     @OnMessage
-    public void onMessage(Session session, String coord, @PathParam("id") String roomId) throws IOException {
+    public void onMessage(Session session, String received, @PathParam("id") String roomId) throws IOException {
         System.out.println("receive mes for room : " + roomId);
-        System.out.println("req : " + coord);
+        System.out.println("req : " + received);
 
         Triplet<String, Session, Session> room  = findTupleBySession(session).get();
         if(room.getValue1() == null || room.getValue2() == null) {
@@ -76,9 +80,18 @@ public class RoomEndpoint {
             return;
         }
 
+        if(received.equals("$AVAILABLE")) {
+            StringBuilder av = new StringBuilder();
+            for(Coord a : board.getAllAvailable()) {
+                av.append(a.toString()).append(" ");
+            }
+            sendTextToSession(session, OTPCommand.info("AVAILABLE " + av));
+            return;
+        }
+
         try {
             StoneColor color = session.equals(room.getValue1()) ? StoneColor.BLACK : StoneColor.WHITE;
-            Coord c = new Coord(coord);
+            Coord c = new Coord(received);
             List<Coord> captured = board.addStone(c, color);
 
             games.put(roomId, board);
@@ -108,13 +121,13 @@ public class RoomEndpoint {
             }
             else {
                 if(session.equals(room.getValue1())) {
-                    sendTextToSession(room.getValue2(), OTPCommand.command("OPPONENT "+ coord));
+                    sendTextToSession(room.getValue2(), OTPCommand.info("OPPONENT "+ received));
 
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_AWAITING);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_READY);
                 }
                 else {
-                    sendTextToSession(room.getValue1(), OTPCommand.command("OPPONENT "+ coord));
+                    sendTextToSession(room.getValue1(), OTPCommand.info("OPPONENT "+ received));
 
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_READY);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_AWAITING);

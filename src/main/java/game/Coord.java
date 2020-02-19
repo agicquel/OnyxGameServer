@@ -160,17 +160,17 @@ public class Coord {
             y = (this.y + 1) + "";
         }
         else if(this.z == 1) {
-            x = ((char) (this.x * 2 + 1 + 'A')) + ",";
+            x = ((char) (this.x * 2 + 1 + 'A')) + "-";
             x += ((char) (this.x * 2 + 2 + 'A')) + "";
-            y = (this.y * 2 + 1) + ",";
+            y = (this.y * 2 + 1) + "-";
             y += (this.y * 2 + 2) + "";
         }
         else if(this.z == 2) {
-            x = ((char)('A' + this.x * 2)) + ",";
+            x = ((char)('A' + this.x * 2)) + "-";
             x += ((char)('A' + this.x * 2 + 1)) + "";
-            y = (this.y * 2 + 2) + ",";
+            y = (this.y * 2 + 2) + "-";
             y += (this.y * 2 + 3) + "";
         }
-        return x + "-" + y;
+        return x + "," + y;
     }
 }
