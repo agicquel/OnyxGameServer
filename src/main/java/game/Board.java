@@ -158,36 +158,16 @@ public class Board {
     public List<Coord> getAllAvailable() {
         List<Coord> available = new ArrayList<>();
 
-        for(int x = 0; x < 12; x++) {
-            for(int y = 0; y < 12; y++) {
-                try {
-                    Coord c = new Coord(x, y, 0);
-                    if(isAvailable(c)) {
-                        available.add(c);
+        for(int z = 0; z < 3; z++) {
+            for(int x = 0; x < 12; x++) {
+                for (int y = 0; y < 12; y++) {
+                    try {
+                        Coord c = new Coord(x, y, z);
+                        if(isAvailable(c)) {
+                            available.add(c);
+                        }
+                    } catch (Exception ignored) {
                     }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-        for(int x = 0; x < 5; x++) {
-            for(int y = 0; y < 6; y++) {
-                try {
-                    Coord c = new Coord(x, y, 1);
-                    if(isAvailable(c)) {
-                        available.add(c);
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-        for(int x = 0; x < 6; x++) {
-            for(int y = 0; y < 5; y++) {
-                try {
-                    Coord c = new Coord(x, y, 2);
-                    if(isAvailable(c)) {
-                        available.add(c);
-                    }
-                } catch (Exception ignored) {
                 }
             }
         }
@@ -205,5 +185,33 @@ public class Board {
 
     public StoneColor getWinner() {
         return winner;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder board = new StringBuilder();
+        for(int z = 0; z < 3; z++) {
+            for(int x = 0; x < 12; x++) {
+                for (int y = 0; y < 12; y++) {
+                    if(this.grid[z][x][y] != StoneColor.BLANK) {
+                        try {
+                            Coord c = new Coord(x, y, z);
+                            board
+                                    .append(c.toString()).append(" : ")
+                                    .append(this.grid[z][x][y])
+                                    .append("\t[")
+                                    .append(z)
+                                    .append("]{")
+                                    .append(x)
+                                    .append("][")
+                                    .append(y)
+                                    .append("]\n");
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return board.toString();
     }
 }

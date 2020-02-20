@@ -65,9 +65,6 @@ public class RoomEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String received, @PathParam("id") String roomId) throws IOException {
-        System.out.println("receive mes for room : " + roomId);
-        System.out.println("req : " + received);
-
         Triplet<String, Session, Session> room  = findTupleBySession(session).get();
         if(room.getValue1() == null || room.getValue2() == null) {
             broadcast(room, OTPCommand.COMMAND_AWAITING);
