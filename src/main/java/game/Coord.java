@@ -6,18 +6,21 @@ import java.util.regex.Pattern;
 
 public class Coord {
     private static final String ERR = "Coordinates are incorrect";
+    private Board board;
     private int x;
     private int y;
     private int z;
 
-    public Coord(int x, int y, int z) throws Exception {
-        if(!isInbound(x, y, z)) throw new Exception(ERR);
+    public Coord(Board board, int x, int y, int z) throws Exception {
+        if(!board.isInbound(x, y, z)) throw new Exception(ERR);
+        this.board = board;
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public Coord(String position) throws Exception {
+    public Coord(Board board, String position) throws Exception {
+        this.board = board;
         Pattern pattern1 = Pattern.compile(",");
         String[] coords = pattern1.split(position);
         if(coords.length != 2) throw new Exception(ERR);
@@ -55,78 +58,63 @@ public class Coord {
             throw new Exception(ERR);
         }
 
-        if(!isInbound(x, y, z)) throw new Exception(ERR);
+        if(!this.board.isInbound(x, y, z)) throw new Exception(ERR);
         this.x = x;
         this.y = y;
         this.z = z;
     }
     
-    public static boolean isInbound(int x, int y, int z) {
-        //System.out.println("x = " + x + ", y = " + y + ", z = " + z);
 
-        if(z == 0) {
-            return x >= 0 && x < 12 && y >= 0 && y < 12;
-        }
-        else if(z == 1) {
-            return x >= 0 && x < 5 && y >= 0 && y < 6;
-        }
-        else if(z == 2) {
-            return x >= 0 && x < 6 && y >= 0 && y < 5;
-        }
-        else {
-            return false;
-        }
-    }
 
     public List<Coord> getNeighbors() {
         List<Coord> coords = new ArrayList<>();
 
         if(z == 0) {
-            addToListIfInbound(coords, x, y - 1, 0);
-            addToListIfInbound(coords, x + 1, y, 0);
-            addToListIfInbound(coords, x, y + 1, 0);
-            addToListIfInbound(coords, x - 1, y, 0);
+            addToListIfInbound(coords, this.board, x, y - 1, 0);
+            addToListIfInbound(coords, this.board, x + 1, y, 0);
+            addToListIfInbound(coords, this.board, x, y + 1, 0);
+            addToListIfInbound(coords, this.board, x - 1, y, 0);
 
             if(x % 2 == 0 && y % 2 == 0) {
-                addToListIfInbound(coords, x / 2 - 1, y / 2, 1);
-                addToListIfInbound(coords, x / 2, y / 2 - 1, 2);
-                addToListIfInbound(coords, x + 1, y + 1, 0);
+                addToListIfInbound(coords, this.board, x / 2 - 1, y / 2, 1);
+                addToListIfInbound(coords, this.board, x / 2, y / 2 - 1, 2);
+                addToListIfInbound(coords, this.board, x + 1, y + 1, 0);
             }
             else if(x % 2 == 0 && y % 2 == 1) {
-                addToListIfInbound(coords, x / 2 - 1, (y - 1) / 2, 1);
-                addToListIfInbound(coords, x / 2, (y - 1) / 2, 2);
-                addToListIfInbound(coords, x - 1, y + 1, 0);
+                addToListIfInbound(coords, this.board, x / 2 - 1, (y - 1) / 2, 1);
+                addToListIfInbound(coords, this.board, x / 2, (y - 1) / 2, 2);
+                addToListIfInbound(coords, this.board, x - 1, y + 1, 0);
             }
             else if(x % 2 == 1 && y % 2 == 0) {
-                addToListIfInbound(coords, (x - 1) / 2, y / 2, 1);
-                addToListIfInbound(coords, (x - 1) / 2 , y / 2 - 1, 2);
-                addToListIfInbound(coords, x + 1, y - 1, 0);
+                addToListIfInbound(coords, this.board,  (x - 1) / 2, y / 2, 1);
+                addToListIfInbound(coords, this.board, (x - 1) / 2 , y / 2 - 1, 2);
+                addToListIfInbound(coords, this.board, x + 1, y - 1, 0);
             }
             else if(x % 2 == 1 && y % 2 == 1) {
-                addToListIfInbound(coords, (x - 1) / 2, (y - 1) / 2, 1);
-                addToListIfInbound(coords, (x - 1) / 2, (y - 1) / 2, 2);
-                addToListIfInbound(coords, x - 1, y - 1, 0);
+                addToListIfInbound(coords, this.board, (x - 1) / 2, (y - 1) / 2, 1);
+                addToListIfInbound(coords, this.board, (x - 1) / 2, (y - 1) / 2, 2);
+                addToListIfInbound(coords, this.board, x - 1, y - 1, 0);
             }
         }
         else if(z == 1) {
-            addToListIfInbound(coords, 2 * x + 1, 2 * y, 0);
-            addToListIfInbound(coords, 2 * x + 2, 2 * y, 0);
-            addToListIfInbound(coords, 2 * x + 1, 2 * y + 1, 0);
-            addToListIfInbound(coords, 2 * x + 2, 2 * y + 1, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 1, 2 * y, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 2, 2 * y, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 1, 2 * y + 1, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 2, 2 * y + 1, 0);
         }
         else if(z == 2) {
-            addToListIfInbound(coords, 2 * x, 2 * y + 1, 0);
-            addToListIfInbound(coords, 2 * x + 1, 2 * y + 1, 0);
-            addToListIfInbound(coords, 2 * x, 2 * y + 2, 0);
-            addToListIfInbound(coords, 2 * x + 1, 2 * y + 2, 0);
+            addToListIfInbound(coords, this.board, 2 * x, 2 * y + 1, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 1, 2 * y + 1, 0);
+            addToListIfInbound(coords, this.board, 2 * x, 2 * y + 2, 0);
+            addToListIfInbound(coords, this.board, 2 * x + 1, 2 * y + 2, 0);
         }
 
         return coords;
     }
 
-    private void addToListIfInbound(List<Coord> coords, int x, int y, int z) {
+    private void addToListIfInbound(List<Coord> coords, Board board, int x, int y, int z) {
         try {
-            coords.add(new Coord(x, y,z));
+            coords.add(new Coord(board, x, y,z));
         } catch (Exception ignored) {
         }
     }

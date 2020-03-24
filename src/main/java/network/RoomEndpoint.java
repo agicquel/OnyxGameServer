@@ -57,7 +57,7 @@ public class RoomEndpoint {
             }
             Triplet<String, Session, Session> newRoom = new Triplet<>(roomId, session, null);
             rooms.add(newRoom);
-            games.put(roomId, new Board());
+            games.put(roomId, new Board(6));
             sendTextToSession(session, OTPCommand.INFO_ROOM_CREATED);
             sendTextToSession(session, OTPCommand.COMMAND_AWAITING);
         }
@@ -88,7 +88,8 @@ public class RoomEndpoint {
 
         try {
             StoneColor color = session.equals(room.getValue1()) ? StoneColor.BLACK : StoneColor.WHITE;
-            Coord c = new Coord(received);
+            Coord c = new Coord(board, received);
+            System.out.println("c = " + c.toString());
             List<Coord> captured = board.addStone(c, color);
 
             games.put(roomId, board);
@@ -102,7 +103,11 @@ public class RoomEndpoint {
             broadcast(room, OTPCommand.result(res.toString()));
 
             if(board.isFinished()) {
-                if(board.getWinner() == StoneColor.BLACK) {
+                if(board.getWinner() == StoneColor.BLANK) {
+                    sendTextToSession(room.getValue1(), OTPCommand.COMMAND_DRAW);
+                    sendTextToSession(room.getValue2(), OTPCommand.COMMAND_DRAW);
+                }
+                else if(board.getWinner() == StoneColor.BLACK) {
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_WIN);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_LOOSE);
                 }
@@ -138,7 +143,6 @@ public class RoomEndpoint {
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        System.out.println("onClose");
         Triplet<String, Session, Session> room = findTupleBySession(session).get();
         broadcast(room, OTPCommand.COMMAND_END);
         if(room.getValue1() != null) room.getValue1().close();
@@ -149,7 +153,6 @@ public class RoomEndpoint {
 
     @OnError
     public void onError(Session session, Throwable throwable) throws IOException {
-        System.out.println("err");
         throwable.printStackTrace();
         sendTextToSession(session, OTPCommand.err(throwable.getMessage()));
     }

@@ -4,17 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
+    private int boardSize;
     private StoneColor[][][] grid;
     private StoneColor turn;
     private boolean finished;
     private StoneColor winner;
 
 
-    public Board() {
-        this.grid = new StoneColor[3][12][12];
+    public Board(int boardSize) {
+        if(boardSize % 2 == 1) boardSize++;
+        this.boardSize = boardSize;
+
+        this.grid = new StoneColor[3][this.boardSize][this.boardSize];
         for(int z = 0; z < 3; z++) {
-            for(int x = 0; x < 12; x++) {
-                for(int y = 0; y < 12; y++) {
+            for(int x = 0; x < this.boardSize; x++) {
+                for(int y = 0; y < this.boardSize; y++) {
                     this.grid[z][x][y] = StoneColor.BLANK;
                 }
             }
@@ -38,33 +42,33 @@ public class Board {
 
         if(point.getZ() == 0 && stoneColor != StoneColor.BLANK) {
             StoneColor opposite = stoneColor == StoneColor.WHITE ? StoneColor.BLACK : StoneColor.WHITE;
-            boolean t = Coord.isInbound(point.getX(), point.getY() + 1, 0)
+            boolean t = this.isInbound(point.getX(), point.getY() + 1, 0)
                     && this.grid[0][point.getX()][point.getY() + 1] == opposite;
-            boolean b = Coord.isInbound(point.getX(), point.getY() - 1, 0)
+            boolean b = this.isInbound(point.getX(), point.getY() - 1, 0)
                     && this.grid[0][point.getX()][point.getY() - 1] == opposite;
-            boolean l = Coord.isInbound(point.getX() - 1, point.getY(), 0)
+            boolean l = this.isInbound(point.getX() - 1, point.getY(), 0)
                     && this.grid[0][point.getX() - 1][point.getY()] == opposite;
-            boolean r = Coord.isInbound(point.getX() + 1, point.getY(), 0)
+            boolean r = this.isInbound(point.getX() + 1, point.getY(), 0)
                     && this.grid[0][point.getX() + 1][point.getY()] == opposite;
 
             if((point.getX() % 2 == 0 && point.getY() % 2 == 0) || point.getX() % 2 == 1 && point.getY() % 2 == 1) {
                 if(r && b && this.grid[0][point.getX() + 1][point.getY() - 1] == stoneColor) {
-                    captured.add(new Coord(point.getX() + 1, point.getY(), 0));
-                    captured.add(new Coord(point.getX(), point.getY() - 1, 0));
+                    captured.add(new Coord(this, point.getX() + 1, point.getY(), 0));
+                    captured.add(new Coord(this, point.getX(), point.getY() - 1, 0));
                 }
                 if(l && t && this.grid[0][point.getX() - 1][point.getY() + 1] == stoneColor) {
-                    captured.add(new Coord(point.getX() - 1, point.getY(), 0));
-                    captured.add(new Coord(point.getX(), point.getY() + 1, 0));
+                    captured.add(new Coord(this, point.getX() - 1, point.getY(), 0));
+                    captured.add(new Coord(this, point.getX(), point.getY() + 1, 0));
                 }
             }
             else if((point.getX() % 2 == 0 && point.getY() % 2 == 1) || (point.getX() % 2 == 1 && point.getY() % 2 == 0)) {
                 if(l && b && this.grid[0][point.getX() - 1][point.getY() - 1] == stoneColor) {
-                    captured.add(new Coord(point.getX() - 1, point.getY(), 0));
-                    captured.add(new Coord(point.getX(), point.getY() - 1, 0));
+                    captured.add(new Coord(this, point.getX() - 1, point.getY(), 0));
+                    captured.add(new Coord(this, point.getX(), point.getY() - 1, 0));
                 }
                 if(t && r && this.grid[0][point.getX() + 1][point.getY() + 1] == stoneColor) {
-                    captured.add(new Coord(point.getX(), point.getY() + 1, 0));
-                    captured.add(new Coord(point.getX() + 1, point.getY(), 0));
+                    captured.add(new Coord(this, point.getX(), point.getY() + 1, 0));
+                    captured.add(new Coord(this, point.getX() + 1, point.getY(), 0));
                 }
             }
         }
@@ -77,6 +81,7 @@ public class Board {
         this.turn = this.turn == StoneColor.BLACK ? StoneColor.WHITE : StoneColor.BLACK;
         this.winner = checkWinner();
         if(this.winner != StoneColor.BLANK) this.finished = true;
+        if(getAllAvailable().size() == 0) this.finished = true;
 
         return captured;
     }
@@ -98,11 +103,11 @@ public class Board {
     public StoneColor checkWinner() {
         List<Coord> visited = new ArrayList<>();
 
-        for(int i = 0; i < 12; i++) {
+        for(int i = 0; i < this.boardSize; i++) {
             if(this.grid[0][0][i] == StoneColor.WHITE) {
                 visited.clear();
                 try {
-                    if(checkWinnerRec(new Coord(0, i, 0), visited, StoneColor.WHITE)) {
+                    if(checkWinnerRec(new Coord(this, 0, i, 0), visited, StoneColor.WHITE)) {
                         return StoneColor.WHITE;
                     }
                 } catch (Exception e) {
@@ -111,11 +116,11 @@ public class Board {
             }
         }
 
-        for(int i = 0; i < 12; i++) {
+        for(int i = 0; i < this.boardSize; i++) {
             if(this.grid[0][i][0] == StoneColor.BLACK) {
                 visited.clear();
                 try {
-                    if(checkWinnerRec(new Coord(i, 0, 0), visited, StoneColor.BLACK)) {
+                    if(checkWinnerRec(new Coord(this, i, 0, 0), visited, StoneColor.BLACK)) {
                         return StoneColor.BLACK;
                     }
                 } catch (Exception e) {
@@ -128,10 +133,10 @@ public class Board {
     }
 
     private boolean checkWinnerRec(Coord point, List<Coord> visited, StoneColor goal) {
-        if(this.grid[point.getZ()][point.getX()][point.getZ()] == StoneColor.WHITE && point.getX() == 11) {
+        if(this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.WHITE && point.getX() == (this.boardSize - 1)) {
             return true;
         }
-        else if(this.grid[point.getZ()][point.getX()][point.getZ()] == StoneColor.BLACK && point.getY() == 11) {
+        else if(this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.BLACK && point.getY() == (this.boardSize - 1)) {
             return true;
         }
 
@@ -159,10 +164,10 @@ public class Board {
         List<Coord> available = new ArrayList<>();
 
         for(int z = 0; z < 3; z++) {
-            for(int x = 0; x < 12; x++) {
-                for (int y = 0; y < 12; y++) {
+            for(int x = 0; x < this.boardSize; x++) {
+                for (int y = 0; y < this.boardSize; y++) {
                     try {
-                        Coord c = new Coord(x, y, z);
+                        Coord c = new Coord(this, x, y, z);
                         if(isAvailable(c)) {
                             available.add(c);
                         }
@@ -187,21 +192,38 @@ public class Board {
         return winner;
     }
 
+    public boolean isInbound(int x, int y, int z) {
+        //System.out.println("x = " + x + ", y = " + y + ", z = " + z);
+
+        if(z == 0) {
+            return x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize;
+        }
+        else if(z == 1) {
+            return x >= 0 && x < (this.boardSize / 2 -1 ) && y >= 0 && y < (this.boardSize / 2);
+        }
+        else if(z == 2) {
+            return x >= 0 && x < (this.boardSize / 2) && y >= 0 && y < (this.boardSize / 2 -1 );
+        }
+        else {
+            return false;
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder board = new StringBuilder();
         for(int z = 0; z < 3; z++) {
-            for(int x = 0; x < 12; x++) {
-                for (int y = 0; y < 12; y++) {
+            for(int x = 0; x < this.boardSize; x++) {
+                for (int y = 0; y < this.boardSize; y++) {
                     if(this.grid[z][x][y] != StoneColor.BLANK) {
                         try {
-                            Coord c = new Coord(x, y, z);
+                            Coord c = new Coord(this, x, y, z);
                             board
                                     .append(c.toString()).append(" : ")
                                     .append(this.grid[z][x][y])
                                     .append("\t[")
                                     .append(z)
-                                    .append("]{")
+                                    .append("][")
                                     .append(x)
                                     .append("][")
                                     .append(y)

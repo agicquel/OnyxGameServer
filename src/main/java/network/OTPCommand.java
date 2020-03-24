@@ -13,6 +13,7 @@ public class OTPCommand {
     public static final String COMMAND_END = command("END");
     public static final String COMMAND_WIN = command("WIN");
     public static final String COMMAND_LOOSE = command("LOOSE");
+    public static final String COMMAND_DRAW = command("DRAW");
 
     public static String err(String err) {
         return "!" + err;
