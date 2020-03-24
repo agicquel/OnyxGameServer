@@ -133,10 +133,10 @@ public class Board {
     }
 
     private boolean checkWinnerRec(Coord point, List<Coord> visited, StoneColor goal) {
-        if(this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.WHITE && point.getX() == (this.boardSize - 1)) {
+        if(goal == StoneColor.WHITE && this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.WHITE && point.getX() == (this.boardSize - 1)) {
             return true;
         }
-        else if(this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.BLACK && point.getY() == (this.boardSize - 1)) {
+        else if(goal == StoneColor.BLACK && this.grid[point.getZ()][point.getX()][point.getY()] == StoneColor.BLACK && point.getY() == (this.boardSize - 1)) {
             return true;
         }
 
