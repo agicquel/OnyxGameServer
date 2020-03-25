@@ -35,7 +35,7 @@ public class Board {
 
     public List<Coord> addStone(Coord point, StoneColor stoneColor) throws Exception {
         if(stoneColor != this.turn) throw new Exception("It is not your turn");
-        if(!isAvailable(point)) throw new Exception("Position not allowed");
+        if(!isAvailable(point)) throw new Exception("Position not allowed:" + point.toString());
         if(this.finished) throw new Exception("The game is already finished");
 
         List<Coord> captured = new ArrayList<>();

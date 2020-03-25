@@ -89,7 +89,6 @@ public class RoomEndpoint {
         try {
             StoneColor color = session.equals(room.getValue1()) ? StoneColor.BLACK : StoneColor.WHITE;
             Coord c = new Coord(board, received);
-            System.out.println("c = " + c.toString());
             List<Coord> captured = board.addStone(c, color);
 
             games.put(roomId, board);
