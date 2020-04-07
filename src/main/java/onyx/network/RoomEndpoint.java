@@ -124,35 +124,22 @@ public class RoomEndpoint {
             }
             broadcast(room, OTPCommand.result(res.toString()));
 
-            if(board.isFinished()) {
-                if(board.getWinner() == StoneColor.BLANK) {
-                    sendTextToSession(room.getValue1(), OTPCommand.COMMAND_DRAW);
-                    sendTextToSession(room.getValue2(), OTPCommand.COMMAND_DRAW);
-                }
-                else if(board.getWinner() == StoneColor.BLACK) {
-                    sendTextToSession(room.getValue1(), OTPCommand.COMMAND_WIN);
-                    sendTextToSession(room.getValue2(), OTPCommand.COMMAND_LOOSE);
+            if(session.equals(room.getValue1())) {
+                sendTextToSession(room.getValue2(), OTPCommand.info("OPPONENT "+ received));
+                if(board.isFinished()) {
+                    closeIfFinished(board, room);
                 }
                 else {
-                    sendTextToSession(room.getValue1(), OTPCommand.COMMAND_LOOSE);
-                    sendTextToSession(room.getValue2(), OTPCommand.COMMAND_WIN);
-                }
-
-                room.getValue1().close();
-                room.getValue2().close();
-                games.remove(room.getValue0());
-                rooms.remove(room);
-            }
-            else {
-                if(session.equals(room.getValue1())) {
-                    sendTextToSession(room.getValue2(), OTPCommand.info("OPPONENT "+ received));
-
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_AWAITING);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_READY);
                 }
+            }
+            else {
+                sendTextToSession(room.getValue1(), OTPCommand.info("OPPONENT "+ received));
+                if(board.isFinished()) {
+                    closeIfFinished(board, room);
+                }
                 else {
-                    sendTextToSession(room.getValue1(), OTPCommand.info("OPPONENT "+ received));
-
                     sendTextToSession(room.getValue1(), OTPCommand.COMMAND_READY);
                     sendTextToSession(room.getValue2(), OTPCommand.COMMAND_AWAITING);
                 }
@@ -161,6 +148,26 @@ public class RoomEndpoint {
         } catch (Exception e) {
             sendTextToSession(session, OTPCommand.err(e.getMessage()));
         }
+    }
+
+    private void closeIfFinished(Board board, Triplet<String, Session, Session> room) throws IOException {
+        if(board.getWinner() == StoneColor.BLANK) {
+            sendTextToSession(room.getValue1(), OTPCommand.COMMAND_DRAW);
+            sendTextToSession(room.getValue2(), OTPCommand.COMMAND_DRAW);
+        }
+        else if(board.getWinner() == StoneColor.BLACK) {
+            sendTextToSession(room.getValue1(), OTPCommand.COMMAND_WIN);
+            sendTextToSession(room.getValue2(), OTPCommand.COMMAND_LOOSE);
+        }
+        else {
+            sendTextToSession(room.getValue1(), OTPCommand.COMMAND_LOOSE);
+            sendTextToSession(room.getValue2(), OTPCommand.COMMAND_WIN);
+        }
+
+        room.getValue1().close();
+        room.getValue2().close();
+        games.remove(room.getValue0());
+        rooms.remove(room);
     }
 
     @OnClose
