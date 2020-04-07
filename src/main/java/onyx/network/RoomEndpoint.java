@@ -1,18 +1,17 @@
-package network;
+package onyx.network;
 
-import game.Board;
-import game.Coord;
-import game.StoneColor;
+import onyx.game.Board;
+import onyx.game.Coord;
+import onyx.game.StoneColor;
+import onyx.Main;
 import org.javatuples.Triplet;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 @ServerEndpoint(value = "/room/{id}")
@@ -26,7 +25,7 @@ public class RoomEndpoint {
 
     /**
      * String : room id
-     * Board : current game
+     * Board : current onyx.game
      */
     private static HashMap<String, Board> games = new HashMap<>();
 
@@ -51,20 +50,44 @@ public class RoomEndpoint {
             }
         }
         else {
-            if(roomId.length() < 6) {
-                sendTextToSession(session, "!Bad format for Room ID");
-                return;
+            if(roomId.length() == 6) {
+                Triplet<String, Session, Session> newRoom = new Triplet<>(roomId, session, null);
+                rooms.add(newRoom);
+                games.put(roomId, new Board(6));
+                sendTextToSession(session, OTPCommand.INFO_ROOM_CREATED);
+                sendTextToSession(session, OTPCommand.COMMAND_AWAITING);
             }
-            Triplet<String, Session, Session> newRoom = new Triplet<>(roomId, session, null);
-            rooms.add(newRoom);
-            games.put(roomId, new Board(6));
-            sendTextToSession(session, OTPCommand.INFO_ROOM_CREATED);
-            sendTextToSession(session, OTPCommand.COMMAND_AWAITING);
+            else if(roomId.length() == 8 && roomId.substring(0, 2).equals("ia")) {
+                Triplet<String, Session, Session> newRoom = new Triplet<>(roomId, session, null);
+                rooms.add(newRoom);
+                games.put(roomId, new Board(6));
+                sendTextToSession(session, OTPCommand.INFO_ROOM_CREATED);
+                sendTextToSession(session, OTPCommand.COMMAND_AWAITING);
+                new Thread(() -> {
+                    ProcessBuilder pb = new ProcessBuilder("python3.7", "./onyx/ai_player.py", roomId);
+                    pb.directory(new File(Main.AI_PATH));
+                    File log = new File(Main.AI_PATH + "onyx/gamelog/" + roomId + ".log");
+                    pb.redirectErrorStream(true);
+                    pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+                    try {
+                        Process p = pb.start();
+                        assert pb.redirectInput() == ProcessBuilder.Redirect.PIPE;
+                        assert pb.redirectOutput().file() == log;
+                        assert p.getInputStream().read() == -1;
+                    } catch (Exception err) {
+                        err.printStackTrace();
+                    }
+                }).start();
+            }
+            else {
+                sendTextToSession(session, "!Bad format for Room ID");
+            }
         }
     }
 
     @OnMessage
     public void onMessage(Session session, String received, @PathParam("id") String roomId) throws IOException {
+        if(!findTupleBySession(session).isPresent()) return;
         Triplet<String, Session, Session> room  = findTupleBySession(session).get();
         if(room.getValue1() == null || room.getValue2() == null) {
             broadcast(room, OTPCommand.COMMAND_AWAITING);
@@ -142,6 +165,7 @@ public class RoomEndpoint {
 
     @OnClose
     public void onClose(Session session) throws IOException {
+        if(!findTupleBySession(session).isPresent()) return;
         Triplet<String, Session, Session> room = findTupleBySession(session).get();
         broadcast(room, OTPCommand.COMMAND_END);
         if(room.getValue1() != null) room.getValue1().close();
@@ -165,7 +189,7 @@ public class RoomEndpoint {
 
     private static Optional<Triplet<String, Session, Session>> findTupleBySession(Session session) {
         return rooms.stream()
-                .filter(tuple -> tuple.getValue1().equals(session) || tuple.getValue2().equals(session))
+                .filter(tuple -> (tuple.getValue1() != null && tuple.getValue1().equals(session)) || (tuple.getValue2() != null && tuple.getValue2().equals(session)))
                 .findAny();
     }
 
@@ -176,7 +200,7 @@ public class RoomEndpoint {
 
     private static void sendTextToSession(Session session, String message) throws IOException {
         try {
-            if(session != null) session.getBasicRemote().sendText(message);
+            if(session != null && session.isOpen()) session.getBasicRemote().sendText(message);
         } catch (IllegalStateException ignored) {
         }
     }

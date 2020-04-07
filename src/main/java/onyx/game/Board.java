@@ -1,4 +1,4 @@
-package game;
+package onyx.game;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class Board {
     public List<Coord> addStone(Coord point, StoneColor stoneColor) throws Exception {
         if(stoneColor != this.turn) throw new Exception("It is not your turn");
         if(!isAvailable(point)) throw new Exception("Position not allowed:" + point.toString());
-        if(this.finished) throw new Exception("The game is already finished");
+        if(this.finished) throw new Exception("The onyx.game is already finished");
 
         List<Coord> captured = new ArrayList<>();
 
@@ -87,13 +87,15 @@ public class Board {
     }
 
     private boolean isAvailable(Coord point) {
-        if(this.grid[point.getZ()][point.getX()][point.getY()] != StoneColor.BLANK)
+        if(this.grid[point.getZ()][point.getX()][point.getY()] != StoneColor.BLANK) {
             return false;
+        }
 
         if(point.getZ() != 0) {
             for(Coord p : point.getNeighbors()) {
-                if(this.grid[p.getZ()][p.getX()][p.getY()] != StoneColor.BLANK)
+                if(this.grid[p.getZ()][p.getX()][p.getY()] != StoneColor.BLANK) {
                     return false;
+                }
             }
         }
 

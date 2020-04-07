@@ -1,4 +1,4 @@
-package network;
+package onyx.network;
 
 public class OTPCommand {
     public static final String ERR_ROOM_FULL = err("The room is full");
