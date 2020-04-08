@@ -2,6 +2,8 @@ package onyx.game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Board {
     private int boardSize;
@@ -38,6 +40,22 @@ public class Board {
         if(!isAvailable(point)) throw new Exception("Position not allowed:" + point.toString());
         if(this.finished) throw new Exception("The onyx.game is already finished");
 
+        List<Coord> captured = getCaptured(point, stoneColor);
+
+        for(Coord c : captured) {
+            this.grid[c.getZ()][c.getX()][c.getY()] = StoneColor.BLANK;
+        }
+
+        this.grid[point.getZ()][point.getX()][point.getY()] = stoneColor;
+        this.turn = this.turn == StoneColor.BLACK ? StoneColor.WHITE : StoneColor.BLACK;
+        this.winner = checkWinner();
+        if(this.winner != StoneColor.BLANK) this.finished = true;
+        if(getAllAvailable().size() == 0) this.finished = true;
+
+        return captured;
+    }
+
+    private List<Coord> getCaptured(Coord point, StoneColor stoneColor) throws Exception {
         List<Coord> captured = new ArrayList<>();
 
         if(point.getZ() == 0 && stoneColor != StoneColor.BLANK) {
@@ -51,37 +69,39 @@ public class Board {
             boolean r = this.isInbound(point.getX() + 1, point.getY(), 0)
                     && this.grid[0][point.getX() + 1][point.getY()] == opposite;
 
+            List<Coord> neighbors = point.getNeighbors();
+            Optional<Coord> s1 = neighbors.stream().filter(coord -> coord.getZ() == 1).findAny();
+            Optional<Coord> s2 = neighbors.stream().filter(coord -> coord.getZ() == 2).findAny();
+            boolean centreZ1 = s1.isPresent() && this.grid[1][s1.get().getX()][s1.get().getY()] == StoneColor.BLANK;
+            boolean centreZ2 = s2.isPresent() && this.grid[2][s2.get().getX()][s2.get().getY()] == StoneColor.BLANK;
+
             if((point.getX() % 2 == 0 && point.getY() % 2 == 0) || point.getX() % 2 == 1 && point.getY() % 2 == 1) {
-                if(r && b && this.grid[0][point.getX() + 1][point.getY() - 1] == stoneColor) {
+                boolean c1 = (point.getX() % 2 == 0 && point.getY() % 2 == 0) ? centreZ2 : centreZ1;
+                boolean c2 = (point.getX() % 2 == 0 && point.getY() % 2 == 0) ? centreZ1 : centreZ2;
+
+                if(c1 && r && b && this.grid[0][point.getX() + 1][point.getY() - 1] == stoneColor) {
                     captured.add(new Coord(this, point.getX() + 1, point.getY(), 0));
                     captured.add(new Coord(this, point.getX(), point.getY() - 1, 0));
                 }
-                if(l && t && this.grid[0][point.getX() - 1][point.getY() + 1] == stoneColor) {
+                if(c2 && l && t && this.grid[0][point.getX() - 1][point.getY() + 1] == stoneColor) {
                     captured.add(new Coord(this, point.getX() - 1, point.getY(), 0));
                     captured.add(new Coord(this, point.getX(), point.getY() + 1, 0));
                 }
             }
             else if((point.getX() % 2 == 0 && point.getY() % 2 == 1) || (point.getX() % 2 == 1 && point.getY() % 2 == 0)) {
-                if(l && b && this.grid[0][point.getX() - 1][point.getY() - 1] == stoneColor) {
+                boolean c1 = (point.getX() % 2 == 0 && point.getY() % 2 == 1) ? centreZ2 : centreZ1;
+                boolean c2 = (point.getX() % 2 == 0 && point.getY() % 2 == 1) ? centreZ1 : centreZ2;
+
+                if(c2 && l && b && this.grid[0][point.getX() - 1][point.getY() - 1] == stoneColor) {
                     captured.add(new Coord(this, point.getX() - 1, point.getY(), 0));
                     captured.add(new Coord(this, point.getX(), point.getY() - 1, 0));
                 }
-                if(t && r && this.grid[0][point.getX() + 1][point.getY() + 1] == stoneColor) {
+                if(c1 && t && r && this.grid[0][point.getX() + 1][point.getY() + 1] == stoneColor) {
                     captured.add(new Coord(this, point.getX(), point.getY() + 1, 0));
                     captured.add(new Coord(this, point.getX() + 1, point.getY(), 0));
                 }
             }
         }
-
-        for(Coord c : captured) {
-            this.grid[c.getZ()][c.getX()][c.getY()] = StoneColor.BLANK;
-        }
-
-        this.grid[point.getZ()][point.getX()][point.getY()] = stoneColor;
-        this.turn = this.turn == StoneColor.BLACK ? StoneColor.WHITE : StoneColor.BLACK;
-        this.winner = checkWinner();
-        if(this.winner != StoneColor.BLANK) this.finished = true;
-        if(getAllAvailable().size() == 0) this.finished = true;
 
         return captured;
     }
