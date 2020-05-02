@@ -215,8 +215,6 @@ public class Board {
     }
 
     public boolean isInbound(int x, int y, int z) {
-        //System.out.println("x = " + x + ", y = " + y + ", z = " + z);
-
         if(z == 0) {
             return x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize;
         }
