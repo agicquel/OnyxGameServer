@@ -72,8 +72,8 @@ public class Board {
             List<Coord> neighbors = point.getNeighbors();
             Optional<Coord> s1 = neighbors.stream().filter(coord -> coord.getZ() == 1).findAny();
             Optional<Coord> s2 = neighbors.stream().filter(coord -> coord.getZ() == 2).findAny();
-            boolean centreZ1 = s1.isPresent() && this.grid[1][s1.get().getX()][s1.get().getY()] == StoneColor.BLANK;
-            boolean centreZ2 = s2.isPresent() && this.grid[2][s2.get().getX()][s2.get().getY()] == StoneColor.BLANK;
+            boolean centreZ1 = !s1.isPresent() || this.grid[1][s1.get().getX()][s1.get().getY()] == StoneColor.BLANK;
+            boolean centreZ2 = !s2.isPresent() || this.grid[2][s2.get().getX()][s2.get().getY()] == StoneColor.BLANK;
 
             if((point.getX() % 2 == 0 && point.getY() % 2 == 0) || point.getX() % 2 == 1 && point.getY() % 2 == 1) {
                 boolean c1 = (point.getX() % 2 == 0 && point.getY() % 2 == 0) ? centreZ2 : centreZ1;

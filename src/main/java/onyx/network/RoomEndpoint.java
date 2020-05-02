@@ -64,7 +64,7 @@ public class RoomEndpoint {
                 sendTextToSession(session, OTPCommand.INFO_ROOM_CREATED);
                 sendTextToSession(session, OTPCommand.COMMAND_AWAITING);
                 new Thread(() -> {
-                    ProcessBuilder pb = new ProcessBuilder("python3.7", "./onyx/ai_player.py", roomId);
+                    ProcessBuilder pb = new ProcessBuilder("python3", "./onyx/ai_player.py", roomId);
                     pb.directory(new File(Main.AI_PATH));
                     File log = new File(Main.AI_PATH + "onyx/gamelog/" + roomId + ".log");
                     pb.redirectErrorStream(true);
